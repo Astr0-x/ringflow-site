@@ -97,7 +97,7 @@
                 <a href="#contact" class="w-full sm:w-auto px-8 py-4 bg-white text-black text-center font-bold rounded-2xl hover:bg-gray-200 transition transform hover:scale-105">
                     Launch Your Agent
                 </a>
-                <button class="w-full sm:w-auto px-8 py-4 glass-card font-bold hover:bg-white/5 transition">
+                <button onclick="document.getElementById('contact').scrollIntoView()" class="w-full sm:w-auto px-8 py-4 glass-card font-bold hover:bg-white/5 transition">
                     Hear a Demo
                 </button>
             </div>
@@ -145,7 +145,7 @@
                 <!-- Feature 2 -->
                 <div class="glass-card p-10 neon-border">
                     <div class="w-12 h-12 bg-indigo-500/20 rounded-xl flex items-center justify-center mb-6 text-indigo-400">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
                     </div>
                     <h3 class="text-xl font-bold mb-4">Human-Like IQ</h3>
                     <p class="text-gray-400 leading-relaxed">Proprietary LLMs trained on customer service data ensure natural flow and emotional intelligence.</p>
@@ -194,11 +194,19 @@
             <h2 class="text-4xl font-bold mb-6">Scale your business in Oklahoma City</h2>
             <p class="text-gray-400 mb-10 text-lg">Stop losing money to voicemail. Set up your RingFlow agent in under 15 minutes.</p>
             
-            <form id="leadForm" class="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto">
-                <input type="email" placeholder="Enter your business email" class="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-sky-500 transition">
-                <button type="button" onclick="handleSubmit()" class="px-10 py-4 bg-sky-500 hover:bg-sky-400 rounded-2xl font-bold transition">Get Access</button>
+            <!-- FORM UPDATED FOR WEB3FORMS COMPATIBILITY -->
+            <form id="leadForm" action="https://api.web3forms.com/submit" method="POST" class="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto">
+                <input type="hidden" name="access_key" value="72d59e3d-c1b1-4f83-a45e-68e1761a8556">
+                <input type="hidden" name="from_name" value="RingFlow AI Lead">
+                <input type="hidden" name="subject" value="New Business Inquiry for RingFlow.ai">
+                <!-- Optional: Add bot protection -->
+                <input type="checkbox" name="botcheck" class="hidden" style="display: none;">
+
+                <input type="email" name="email" required placeholder="Enter your business email" class="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-sky-500 transition">
+                <button type="submit" id="submitBtn" class="px-10 py-4 bg-sky-500 hover:bg-sky-400 rounded-2xl font-bold transition">Get Access</button>
             </form>
-            <div id="msg" class="mt-4 text-sky-400 hidden">Perfect. One of our specialists will reach out shortly!</div>
+            <div id="msg" class="mt-4 text-sky-400 hidden font-bold">Success! We have received your inquiry. Check your email.</div>
+            <div id="error-msg" class="mt-4 text-red-400 hidden">Something went wrong. Please try again or refresh the page.</div>
         </div>
     </section>
 
@@ -215,18 +223,48 @@
     </footer>
 
     <script>
-        function handleSubmit() {
-            const btn = document.querySelector('#leadForm button');
-            const msg = document.querySelector('#msg');
-            btn.innerHTML = 'Processing...';
-            btn.disabled = true;
-            
-            setTimeout(() => {
-                document.getElementById('leadForm').classList.add('opacity-50');
-                msg.classList.remove('hidden');
-                btn.innerHTML = 'Sent!';
-            }, 1500);
-        }
+        const form = document.getElementById('leadForm');
+        const result = document.getElementById('msg');
+        const errorMsg = document.getElementById('error-msg');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Sending...';
+
+            const formData = new FormData(form);
+            const object = Object.fromEntries(formData);
+            const json = JSON.stringify(object);
+
+            fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: json
+                })
+                .then(async (response) => {
+                    let res = await response.json();
+                    if (response.status == 200) {
+                        result.classList.remove('hidden');
+                        form.reset();
+                        form.style.display = 'none';
+                    } else {
+                        console.log(response);
+                        errorMsg.classList.remove('hidden');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = 'Try Again';
+                    }
+                })
+                .catch(error => {
+                    console.log(error);
+                    errorMsg.classList.remove('hidden');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Try Again';
+                });
+        });
     </script>
 </body>
 </html>
